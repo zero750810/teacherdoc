@@ -252,7 +252,7 @@ class TeacherDocApp(QMainWindow):
         # 更新教師列表
         self.update_teacher_list()
         
-        # 設定視窗標���和大小
+        # 設定視窗標和大小
         self.setWindowTitle("教師資料文件產生器")
         self.setFixedSize(400, 900)
         
@@ -278,20 +278,27 @@ class TeacherDocApp(QMainWindow):
         
         # 使用網格布局來放置按鈕
         teacher_grid = QGridLayout()
+        teacher_grid.setSpacing(10)  # 設定按鈕之間的間距
+        teacher_grid.setHorizontalSpacing(10)  # 設定水平間距
+        teacher_grid.setVerticalSpacing(10)    # 設定垂直間距
+        
+        # 計算按鈕寬度 (視窗寬度 - 邊距 - 中間間距) / 2
+        button_width = (380 - 20 - 10) // 2
+        
         for i, (label, tag) in enumerate(self.teacher_tags):
             btn = QPushButton(label)
             btn.setFixedHeight(40)
+            btn.setFixedWidth(button_width)  # 設定固定寬度
             btn.clicked.connect(lambda checked, t=tag: self.copy_tag(t))
-            # 計算行和列的位置
-            row = i // 2  # 每兩個按鈕一行
-            col = i % 2   # 在該行的第一個或第二個位置
+            row = i // 2
+            col = i % 2
             teacher_grid.addWidget(btn, row, col)
         
         teacher_layout.addLayout(teacher_grid)
         teacher_frame.setLayout(teacher_layout)
         layout.addWidget(teacher_frame)
         
-        # 課程資料標記區
+        # 課程資料標記區 (使用相同的設定)
         course_frame = QFrame()
         course_frame.setFrameStyle(QFrame.Shape.Box)
         course_layout = QVBoxLayout()
@@ -300,22 +307,25 @@ class TeacherDocApp(QMainWindow):
         course_label.setFont(QFont('', 12, QFont.Weight.Bold))
         course_layout.addWidget(course_label)
         
-        # 使用網格布局來放置按鈕
         course_grid = QGridLayout()
+        course_grid.setSpacing(10)
+        course_grid.setHorizontalSpacing(10)
+        course_grid.setVerticalSpacing(10)
+        
         for i, (label, tag) in enumerate(self.course_tags):
             btn = QPushButton(label)
             btn.setFixedHeight(40)
+            btn.setFixedWidth(button_width)  # 使用相同的寬度
             btn.clicked.connect(lambda checked, t=tag: self.copy_tag(t))
-            # 計算行和列的位置
-            row = i // 2  # 每兩個按鈕一行
-            col = i % 2   # 在該行的第一個或第二個位置
+            row = i // 2
+            col = i % 2
             course_grid.addWidget(btn, row, col)
         
         course_layout.addLayout(course_grid)
         course_frame.setLayout(course_layout)
         layout.addWidget(course_frame)
         
-        # 報價單標記區
+        # 報價單標記區 (使用相同的設定)
         price_list_frame = QFrame()
         price_list_frame.setFrameStyle(QFrame.Shape.Box)
         price_list_layout = QVBoxLayout()
@@ -324,11 +334,15 @@ class TeacherDocApp(QMainWindow):
         price_list_label.setFont(QFont('', 12, QFont.Weight.Bold))
         price_list_layout.addWidget(price_list_label)
         
-        # 使用網格布局來放置按鈕
         price_list_grid = QGridLayout()
+        price_list_grid.setSpacing(10)
+        price_list_grid.setHorizontalSpacing(10)
+        price_list_grid.setVerticalSpacing(10)
+        
         for i, (label, tag) in enumerate(self.price_list_tags):
             btn = QPushButton(label)
             btn.setFixedHeight(40)
+            btn.setFixedWidth(button_width)  # 使用相同的寬度
             btn.clicked.connect(lambda checked, t=tag: self.copy_tag(t))
             row = i // 2
             col = i % 2
@@ -337,7 +351,10 @@ class TeacherDocApp(QMainWindow):
         price_list_layout.addLayout(price_list_grid)
         price_list_frame.setLayout(price_list_layout)
         layout.addWidget(price_list_frame)
-               
+        
+        # 設定內容區域的邊距
+        layout.setContentsMargins(10, 10, 10, 10)
+        
         content_widget.setLayout(layout)
         scroll.setWidget(content_widget)
         return scroll
@@ -385,7 +402,7 @@ class TeacherDocApp(QMainWindow):
                 base_path = os.path.dirname(os.path.abspath(__file__))
 
             # 嘗試讀取嵌入的憑證檔案
-            credentials_path = os.path.join(base_path, 'embedded_credentials.json')
+            credentials_path = os.path.join(base_path, 'credentials.json')
             print(f"嘗試讀取憑證檔案：{credentials_path}")
             
             with open(credentials_path, 'r') as f:
@@ -481,7 +498,7 @@ class TeacherDocApp(QMainWindow):
     
     def generate_document(self):
         try:
-            print("開始生成文件...")
+            print("開始生���文件...")
             
             # 檢查選擇
             if not self.teacher_combo.currentText() or not self.course_combo.currentText():
@@ -511,7 +528,7 @@ class TeacherDocApp(QMainWindow):
             print("讀取課程資料...")
             course_data = self.course_manager.courses.get(course_id)
             if not course_data:
-                print(f"找不到課程資料: {course_id}")
+                print(f"找不到課���資料: {course_id}")
                 raise ValueError(f"找不到課程資料: {course_id}")
             
             print("合併資料...")
@@ -803,7 +820,7 @@ class TeacherDocApp(QMainWindow):
                 try:
                     course_data = {
                         'course_name': row[0] if len(row) > 0 else '',     # 社團名稱 (A欄)
-                        'intro': row[1] if len(row) > 1 else '',           # 課程介紹 (B欄)
+                        'intro': row[1] if len(row) > 1 else '',           # 課程介紹 (B��)
                         'material_fee': row[2] if len(row) > 2 else '',    # 材料費 (C欄)
                         'reason': row[3] if len(row) > 3 else '',          # 原因 (D欄)
                         'target': row[4] if len(row) > 4 else '',          # 教學目標 (E欄)
@@ -835,7 +852,7 @@ class TeacherDocApp(QMainWindow):
                         except Exception as split_error:
                             print(f"處理照片列表時發生錯誤: {str(split_error)}")
                     
-                    # 處理���司存摺（N欄）
+                    # 處理司存摺（N欄）
                     if len(row) > 13 and row[13]:
                         try:
                             save_path = f'images/courses/{row[13]}'
