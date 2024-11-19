@@ -369,6 +369,7 @@ class TeacherDocApp(QMainWindow):
             QMessageBox.critical(self, "錯誤", f"登入失敗：{str(e)}")
             self.close()
     
+    
     def get_service_account_creds(self):
         try:
             # 先嘗試從環境變數讀取
