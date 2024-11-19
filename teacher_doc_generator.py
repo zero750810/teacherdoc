@@ -371,6 +371,18 @@ class TeacherDocApp(QMainWindow):
     
     def get_service_account_creds(self):
         try:
+            # 先嘗試從環境變數讀取
+            import os
+            import json
+            credentials_json = os.getenv('GOOGLE_CREDENTIALS')
+            if credentials_json:
+                credentials_info = json.loads(credentials_json)
+                return service_account.Credentials.from_service_account_info(
+                    credentials_info,
+                    scopes=self.SCOPES
+                )
+            
+            # 如果環境變數不存在，則嘗試從檔案讀取
             return service_account.Credentials.from_service_account_file(
                 'credentials.json',
                 scopes=self.SCOPES
@@ -1019,7 +1031,7 @@ class DocumentProcessor:
                 print("已設定檔案權限為可讀寫")
             
             except Exception as perm_error:
-                print(f"設定檔案權限時發生錯誤：{str(perm_error)}")
+                print(f"設定檔案權限時發生��誤：{str(perm_error)}")
             
             print("文件處理完成")
             return output_path
