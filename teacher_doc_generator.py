@@ -393,25 +393,35 @@ class TeacherDocApp(QMainWindow):
             import sys
             import json
 
-            # 獲取執行檔所在目錄
+            # 獲取資源檔案路徑
             if getattr(sys, 'frozen', False):
                 # 如果是打包後的執行檔
-                base_path = sys._MEIPASS
+                bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
+                credentials_path = os.path.join(bundle_dir, 'embedded_credentials.json')
+                print(f"打包模式 - 嘗試讀取憑證檔案：{credentials_path}")
             else:
                 # 如果是直接運行 Python 腳本
-                base_path = os.path.dirname(os.path.abspath(__file__))
+                credentials_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'credentials.json')
+                print(f"開發模式 - 嘗試讀取憑證檔案：{credentials_path}")
 
-            # 嘗試讀取嵌入的憑證檔案
-            credentials_path = os.path.join(base_path, 'credentials.json')
-            print(f"嘗試讀取憑證檔案：{credentials_path}")
+            try:
+                with open(credentials_path, 'r', encoding='utf-8') as f:
+                    credentials_info = json.load(f)
+                    print("成功讀取憑證檔案")
+                    return service_account.Credentials.from_service_account_info(
+                        credentials_info,
+                        scopes=self.SCOPES
+                    )
+            except FileNotFoundError:
+                print(f"找不到憑證檔案：{credentials_path}")
+                raise
+            except json.JSONDecodeError as e:
+                print(f"憑證檔案格式錯誤：{str(e)}")
+                raise
+            except Exception as e:
+                print(f"讀取憑證時發生未知錯誤：{str(e)}")
+                raise
             
-            with open(credentials_path, 'r') as f:
-                credentials_info = json.load(f)
-                print("成功讀取憑證檔案")
-                return service_account.Credentials.from_service_account_info(
-                    credentials_info,
-                    scopes=self.SCOPES
-                )
         except Exception as e:
             print(f"讀取憑證時發生錯誤：{str(e)}")
             raise
@@ -498,7 +508,7 @@ class TeacherDocApp(QMainWindow):
     
     def generate_document(self):
         try:
-            print("開始生���文件...")
+            print("開始生文件...")
             
             # 檢查選擇
             if not self.teacher_combo.currentText() or not self.course_combo.currentText():
@@ -528,7 +538,7 @@ class TeacherDocApp(QMainWindow):
             print("讀取課程資料...")
             course_data = self.course_manager.courses.get(course_id)
             if not course_data:
-                print(f"找不到課���資料: {course_id}")
+                print(f"找不到課程資料: {course_id}")
                 raise ValueError(f"找不到課程資料: {course_id}")
             
             print("合併資料...")
@@ -587,7 +597,7 @@ class TeacherDocApp(QMainWindow):
             self.teacher_combo.addItem(f"{tid}: {tdata['name']}")
     
     def copy_tag(self, tag):
-        # 複製標記到剪貼簿
+        # 複製標記���剪貼簿
         QApplication.clipboard().setText(tag)
         
         # 立浮動提示視窗
@@ -820,7 +830,7 @@ class TeacherDocApp(QMainWindow):
                 try:
                     course_data = {
                         'course_name': row[0] if len(row) > 0 else '',     # 社團名稱 (A欄)
-                        'intro': row[1] if len(row) > 1 else '',           # 課程介紹 (B��)
+                        'intro': row[1] if len(row) > 1 else '',           # 課程介紹 (B欄)
                         'material_fee': row[2] if len(row) > 2 else '',    # 材料費 (C欄)
                         'reason': row[3] if len(row) > 3 else '',          # 原因 (D欄)
                         'target': row[4] if len(row) > 4 else '',          # 教學目標 (E欄)
@@ -1064,7 +1074,7 @@ class DocumentProcessor:
         except Exception as e:
             print(f"處理文件時發生錯誤：{str(e)}")
             print(f"錯誤類型：{type(e)}")
-            print(f"錯誤詳情：{e.__dict__}")
+            print(f"��誤詳情：{e.__dict__}")
             raise
     
     def _process_odt(self, data, output_path):
