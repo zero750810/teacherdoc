@@ -376,6 +376,7 @@ class TeacherDocApp(QMainWindow):
             import json
             credentials_json = os.getenv('GOOGLE_CREDENTIALS')
             if credentials_json:
+                print("成功讀取環境變數中的憑證",credentials_json)
                 credentials_info = json.loads(credentials_json)
                 return service_account.Credentials.from_service_account_info(
                     credentials_info,
@@ -383,6 +384,7 @@ class TeacherDocApp(QMainWindow):
                 )
             
             # 如果環境變數不存在，則嘗試從檔案讀取
+            print("環境變數中未找到憑證，嘗試從文件中讀取")
             return service_account.Credentials.from_service_account_file(
                 'credentials.json',
                 scopes=self.SCOPES
