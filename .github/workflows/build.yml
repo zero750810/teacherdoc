@@ -22,8 +22,6 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
-    env:
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -31,13 +29,12 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
     
-    - name: Create directories
+    - name: Create directories and credentials
       shell: bash
       run: |
         mkdir -p images/teachers
         mkdir -p images/courses
-        touch images/teachers/.gitkeep
-        touch images/courses/.gitkeep
+        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > embedded_credentials.json
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
@@ -52,17 +49,6 @@ jobs:
         pip install grpc-google-iam-v1
         pip install grpcio
     
-    - name: Check environment variables
-      run: |
-        if [ -n "$GOOGLE_CREDENTIALS" ]; then
-          echo "GOOGLE_CREDENTIALS is set"
-          echo "Length: ${#GOOGLE_CREDENTIALS}"
-        else
-          echo "GOOGLE_CREDENTIALS is not set"
-          exit 1
-        fi
-      shell: bash
-    
     - name: Build with PyInstaller
       run: |
         pyinstaller --noconfirm --onefile --windowed `
@@ -70,6 +56,7 @@ jobs:
           --add-data "courses.json;." `
           --add-data "teachers.json;." `
           --add-data "images;images" `
+          --add-data "embedded_credentials.json;." `
           --name "TeacherDocGenerator_Win" `
           main.py
     
@@ -81,8 +68,6 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    env:
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -90,12 +75,11 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
     
-    - name: Create directories
+    - name: Create directories and credentials
       run: |
         mkdir -p images/teachers
         mkdir -p images/courses
-        touch images/teachers/.gitkeep
-        touch images/courses/.gitkeep
+        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > embedded_credentials.json
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
@@ -110,17 +94,6 @@ jobs:
         pip install grpc-google-iam-v1
         pip install grpcio
     
-    - name: Check environment variables
-      run: |
-        if [ -n "$GOOGLE_CREDENTIALS" ]; then
-          echo "GOOGLE_CREDENTIALS is set"
-          echo "Length: ${#GOOGLE_CREDENTIALS}"
-        else
-          echo "GOOGLE_CREDENTIALS is not set"
-          exit 1
-        fi
-      shell: bash
-    
     - name: Build with PyInstaller
       run: |
         pyinstaller --noconfirm --onefile --windowed \
@@ -128,6 +101,7 @@ jobs:
           --add-data "courses.json:." \
           --add-data "teachers.json:." \
           --add-data "images:images" \
+          --add-data "embedded_credentials.json:." \
           --name "TeacherDocGenerator_Mac" \
           main.py
     

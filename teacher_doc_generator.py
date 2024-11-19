@@ -252,7 +252,7 @@ class TeacherDocApp(QMainWindow):
         # 更新教師列表
         self.update_teacher_list()
         
-        # 設定視窗標題和大小
+        # 設定視窗標���和大小
         self.setWindowTitle("教師資料文件產生器")
         self.setFixedSize(400, 900)
         
@@ -372,33 +372,29 @@ class TeacherDocApp(QMainWindow):
     
     def get_service_account_creds(self):
         try:
-            # 先嘗試從環境變數讀取
             import os
+            import sys
             import json
-            credentials_json = os.getenv('GOOGLE_CREDENTIALS')
-            print(f"環境變數狀態: {'存在' if credentials_json else '不存在'}")
-            if credentials_json:
-                print(f"環境變數長度: {len(credentials_json)}")
-                try:
-                    credentials_info = json.loads(credentials_json)
-                    print("成功解析 JSON")
-                    return service_account.Credentials.from_service_account_info(
-                        credentials_info,
-                        scopes=self.SCOPES
-                    )
-                except json.JSONDecodeError as je:
-                    print(f"JSON 解析錯誤: {str(je)}")
-                    raise
-                except Exception as e:
-                    print(f"憑證建立錯誤: {str(e)}")
-                    raise
+
+            # 獲取執行檔所在目錄
+            if getattr(sys, 'frozen', False):
+                # 如果是打包後的執行檔
+                base_path = sys._MEIPASS
+            else:
+                # 如果是直接運行 Python 腳本
+                base_path = os.path.dirname(os.path.abspath(__file__))
+
+            # 嘗試讀取嵌入的憑證檔案
+            credentials_path = os.path.join(base_path, 'embedded_credentials.json')
+            print(f"嘗試讀取憑證檔案：{credentials_path}")
             
-            # 如果環境變數不存在，則嘗試從檔案讀取
-            print("環境變數中未找到憑證，嘗試從文件中讀取")
-            return service_account.Credentials.from_service_account_file(
-                'credentials.json',
-                scopes=self.SCOPES
-            )
+            with open(credentials_path, 'r') as f:
+                credentials_info = json.load(f)
+                print("成功讀取憑證檔案")
+                return service_account.Credentials.from_service_account_info(
+                    credentials_info,
+                    scopes=self.SCOPES
+                )
         except Exception as e:
             print(f"讀取憑證時發生錯誤：{str(e)}")
             raise
@@ -595,7 +591,7 @@ class TeacherDocApp(QMainWindow):
         
         # 計算位置（置中顯示）
         pos_x = (self.width() - toast.width()) // 2
-        pos_y = self.height() - toast.height() - 50  # ��離底部 50 像素
+        pos_y = self.height() - toast.height() - 50  # 離底部 50 像素
         toast.move(pos_x, pos_y)
         
         # 顯示提示
@@ -839,7 +835,7 @@ class TeacherDocApp(QMainWindow):
                         except Exception as split_error:
                             print(f"處理照片列表時發生錯誤: {str(split_error)}")
                     
-                    # 處理公司存摺（N欄）
+                    # 處理���司存摺（N欄）
                     if len(row) > 13 and row[13]:
                         try:
                             save_path = f'images/courses/{row[13]}'
