@@ -40,13 +40,19 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     
+    - name: Create directories
+      run: |
+        mkdir -p images/teachers
+        mkdir -p images/courses
+    
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconfirm --onefile --windowed `
+        python -m PyInstaller --noconfirm --onefile --windowed `
           --add-data "teacher_doc_generator.py;." `
           --add-data "credentials.json;." `
           --add-data "courses.json;." `
           --add-data "teachers.json;." `
+          --add-data "images;images" `
           --hidden-import teacher_doc_generator `
           --hidden-import PyQt6 `
           --hidden-import PyQt6.QtCore `
@@ -68,6 +74,7 @@ jobs:
           --collect-submodules pandas `
           --collect-submodules docx `
           --collect-submodules odf `
+          --debug all `
           --name "TeacherDocGenerator_Win" `
           main.py
     
@@ -97,13 +104,19 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
     
+    - name: Create directories
+      run: |
+        mkdir -p images/teachers
+        mkdir -p images/courses
+    
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconfirm --onefile --windowed \
+        python -m PyInstaller --noconfirm --onefile --windowed \
           --add-data "teacher_doc_generator.py:." \
           --add-data "credentials.json:." \
           --add-data "courses.json:." \
           --add-data "teachers.json:." \
+          --add-data "images:images" \
           --hidden-import teacher_doc_generator \
           --hidden-import PyQt6 \
           --hidden-import PyQt6.QtCore \
@@ -125,6 +138,7 @@ jobs:
           --collect-submodules pandas \
           --collect-submodules docx \
           --collect-submodules odf \
+          --debug all \
           --name "TeacherDocGenerator_Mac" \
           main.py
     

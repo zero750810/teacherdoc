@@ -3,13 +3,9 @@
 __pycache__/
 *.pyc
 config.sh
-credentials.json
 build_release.sh
 clean_repo.sh
 使用說明.md
 build/
 dist/
 backup/
-*.c
-*.so
-*.pyd
