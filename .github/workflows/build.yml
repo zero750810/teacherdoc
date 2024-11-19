@@ -22,6 +22,8 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -68,6 +70,8 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
     - uses: actions/checkout@v4
       with:
