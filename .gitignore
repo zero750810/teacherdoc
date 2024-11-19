@@ -6,3 +6,4 @@ config.sh
 build/
 dist/
 backup/
+credentials.json
