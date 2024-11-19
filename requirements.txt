@@ -1,0 +1,8 @@
+PyQt6==6.7.1
+python-docx
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+pandas
+pillow
+odfpy 
