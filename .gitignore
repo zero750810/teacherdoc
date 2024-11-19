@@ -10,3 +10,6 @@ clean_repo.sh
 build/
 dist/
 backup/
+*.c
+*.so
+*.pyd
