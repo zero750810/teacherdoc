@@ -52,6 +52,17 @@ jobs:
         pip install grpc-google-iam-v1
         pip install grpcio
     
+    - name: Check environment variables
+      run: |
+        if [ -n "$GOOGLE_CREDENTIALS" ]; then
+          echo "GOOGLE_CREDENTIALS is set"
+          echo "Length: ${#GOOGLE_CREDENTIALS}"
+        else
+          echo "GOOGLE_CREDENTIALS is not set"
+          exit 1
+        fi
+      shell: bash
+    
     - name: Build with PyInstaller
       run: |
         pyinstaller --noconfirm --onefile --windowed `
@@ -98,6 +109,17 @@ jobs:
         pip install pyinstaller
         pip install grpc-google-iam-v1
         pip install grpcio
+    
+    - name: Check environment variables
+      run: |
+        if [ -n "$GOOGLE_CREDENTIALS" ]; then
+          echo "GOOGLE_CREDENTIALS is set"
+          echo "Length: ${#GOOGLE_CREDENTIALS}"
+        else
+          echo "GOOGLE_CREDENTIALS is not set"
+          exit 1
+        fi
+      shell: bash
     
     - name: Build with PyInstaller
       run: |

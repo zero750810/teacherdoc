@@ -376,13 +376,22 @@ class TeacherDocApp(QMainWindow):
             import os
             import json
             credentials_json = os.getenv('GOOGLE_CREDENTIALS')
+            print(f"環境變數狀態: {'存在' if credentials_json else '不存在'}")
             if credentials_json:
-                print("成功讀取環境變數中的憑證",credentials_json)
-                credentials_info = json.loads(credentials_json)
-                return service_account.Credentials.from_service_account_info(
-                    credentials_info,
-                    scopes=self.SCOPES
-                )
+                print(f"環境變數長度: {len(credentials_json)}")
+                try:
+                    credentials_info = json.loads(credentials_json)
+                    print("成功解析 JSON")
+                    return service_account.Credentials.from_service_account_info(
+                        credentials_info,
+                        scopes=self.SCOPES
+                    )
+                except json.JSONDecodeError as je:
+                    print(f"JSON 解析錯誤: {str(je)}")
+                    raise
+                except Exception as e:
+                    print(f"憑證建立錯誤: {str(e)}")
+                    raise
             
             # 如果環境變數不存在，則嘗試從檔案讀取
             print("環境變數中未找到憑證，嘗試從文件中讀取")
@@ -586,7 +595,7 @@ class TeacherDocApp(QMainWindow):
         
         # 計算位置（置中顯示）
         pos_x = (self.width() - toast.width()) // 2
-        pos_y = self.height() - toast.height() - 50  # 距離底部 50 像素
+        pos_y = self.height() - toast.height() - 50  # ��離底部 50 像素
         toast.move(pos_x, pos_y)
         
         # 顯示提示
@@ -1034,7 +1043,7 @@ class DocumentProcessor:
                 print("已設定檔案權限為可讀寫")
             
             except Exception as perm_error:
-                print(f"設定檔案權限時發生��誤：{str(perm_error)}")
+                print(f"設定檔案權限時發生誤：{str(perm_error)}")
             
             print("文件處理完成")
             return output_path
