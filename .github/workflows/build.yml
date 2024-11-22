@@ -34,7 +34,7 @@ jobs:
       run: |
         mkdir -p images/teachers
         mkdir -p images/courses
-        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > embedded_credentials.json
+        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
         echo '{}' > courses.json
         echo '{}' > teachers.json
     
@@ -58,7 +58,7 @@ jobs:
           --add-data "courses.json;." `
           --add-data "teachers.json;." `
           --add-data "images;images" `
-          --add-data "embedded_credentials.json;." `
+          --add-data "credentials.json;." `
           --name "TeacherDocGenerator_Win" `
           main.py
     
@@ -81,7 +81,7 @@ jobs:
       run: |
         mkdir -p images/teachers
         mkdir -p images/courses
-        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > embedded_credentials.json
+        echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
         echo '{}' > courses.json
         echo '{}' > teachers.json
     
@@ -105,7 +105,7 @@ jobs:
           --add-data "courses.json:." \
           --add-data "teachers.json:." \
           --add-data "images:images" \
-          --add-data "embedded_credentials.json:." \
+          --add-data "credentials.json:." \
           --name "TeacherDocGenerator_Mac" \
           main.py
     
