@@ -419,6 +419,21 @@ class TeacherDocApp(QMainWindow):
             import json
             import sys
             
+            # 顯示目前的工作目錄
+            print(f"當前工作目錄: {os.getcwd()}")
+            
+            # 如果是打包後的執行檔，顯示執行檔位置
+            if getattr(sys, 'frozen', False):
+                print(f"執行檔位置: {sys.executable}")
+                print(f"執行檔目錄: {os.path.dirname(sys.executable)}")
+            
+            # 列出當前目錄的所有檔案
+            print("當前目錄的檔案列表:")
+            for root, dirs, files in os.walk('.'):
+                print(f"\n目錄: {root}")
+                for file in files:
+                    print(f"  - {file}")
+            
             # 先嘗試從環境變數讀取
             credentials_json = os.getenv('GOOGLE_CREDENTIALS')
             if credentials_json:
@@ -445,11 +460,15 @@ class TeacherDocApp(QMainWindow):
                 
                 # 嘗試在不同位置尋找憑證檔案
                 possible_paths = [
-                    os.path.join(application_path, 'embedded_credentials.json'),
                     os.path.join(application_path, 'credentials.json'),
-                    os.path.join(os.getcwd(), 'embedded_credentials.json'),
-                    os.path.join(os.getcwd(), 'credentials.json')
+                    os.path.join(os.getcwd(), 'credentials.json'),
+                    'credentials.json'
                 ]
+                
+                print("\n嘗試尋找憑證檔案:")
+                for path in possible_paths:
+                    print(f"檢查路徑: {path}")
+                    print(f"檔案是否存在: {os.path.exists(path)}")
                 
                 cred_file = None
                 for path in possible_paths:
@@ -460,7 +479,7 @@ class TeacherDocApp(QMainWindow):
                 if not cred_file:
                     raise FileNotFoundError("找不到憑證檔案")
                 
-                print(f"嘗試從檔案讀取憑證：{cred_file}")
+                print(f"\n使用憑證檔案：{cred_file}")
                 with open(cred_file, 'r', encoding='utf-8') as f:
                     credentials_info = json.load(f)
                     creds = service_account.Credentials.from_service_account_info(
@@ -820,7 +839,7 @@ class TeacherDocApp(QMainWindow):
                         'course_type': row[21] if len(row) > 21 else '' # 課程分類 (V欄)
                     }
                     
-                    # 修改照片欄位對應
+                    # 修改照��欄位對應
                     photo_fields = {
                         3: ('photo', '大頭照'),       # D欄
                         17: ('id_front', '身分證正'),   # S欄
@@ -994,7 +1013,7 @@ class TeacherDocApp(QMainWindow):
         self.course_combo.clear()
         
         # 收集所有不重複的課程分類
-        course_types = {}  # 改用字典來儲存課分類和ID的對應關係
+        course_types = {}  # 改用字典���儲存課分類和ID的對應關係
         for course_id, cdata in self.course_manager.courses.items():
             if 'course' in cdata and cdata['course']:
                 course_types[cdata['course']] = course_id
@@ -1361,7 +1380,7 @@ class DocumentProcessor:
                     break
             
             if not found:
-                print("找不到課程照片表格標記")
+                print("找不到課��照片表格標記")
                 return
             
             # 取得照片列表
