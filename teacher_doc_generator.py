@@ -443,10 +443,22 @@ class TeacherDocApp(QMainWindow):
                     # 如果是直接執行 Python 腳本
                     application_path = os.path.dirname(os.path.abspath(__file__))
                 
-                # 先嘗試讀取 embedded_credentials.json
-                cred_file = os.path.join(application_path, 'embedded_credentials.json')
-                if not os.path.exists(cred_file):
-                    cred_file = os.path.join(application_path, 'credentials.json')
+                # 嘗試在不同位置尋找憑證檔案
+                possible_paths = [
+                    os.path.join(application_path, 'embedded_credentials.json'),
+                    os.path.join(application_path, 'credentials.json'),
+                    os.path.join(os.getcwd(), 'embedded_credentials.json'),
+                    os.path.join(os.getcwd(), 'credentials.json')
+                ]
+                
+                cred_file = None
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        cred_file = path
+                        break
+                
+                if not cred_file:
+                    raise FileNotFoundError("找不到憑證檔案")
                 
                 print(f"嘗試從檔案讀取憑證：{cred_file}")
                 with open(cred_file, 'r', encoding='utf-8') as f:
@@ -1124,7 +1136,7 @@ class DocumentProcessor:
                 if marker in cell.text:
                     print(f"處理標記 {marker}...")
                     if isinstance(value, list) and key == 'other_certs':
-                        # 處理多���圖片
+                        # 處理多圖片
                         print(f"開始處理其他證明照片，共 {len(value)} 張")
                         cell.text = cell.text.replace(marker, '')
                         paragraph = cell.paragraphs[0]

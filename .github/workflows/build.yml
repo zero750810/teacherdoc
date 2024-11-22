@@ -29,12 +29,14 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
     
-    - name: Create directories and credentials
+    - name: Create directories and files
       shell: bash
       run: |
         mkdir -p images/teachers
         mkdir -p images/courses
         echo '${{ secrets.GOOGLE_CREDENTIALS }}' > embedded_credentials.json
+        echo '{}' > courses.json
+        echo '{}' > teachers.json
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
@@ -75,11 +77,13 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
     
-    - name: Create directories and credentials
+    - name: Create directories and files
       run: |
         mkdir -p images/teachers
         mkdir -p images/courses
         echo '${{ secrets.GOOGLE_CREDENTIALS }}' > embedded_credentials.json
+        echo '{}' > courses.json
+        echo '{}' > teachers.json
     
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
