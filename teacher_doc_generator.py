@@ -277,7 +277,7 @@ class TeacherDocApp(QMainWindow):
         teacher_label.setFont(QFont('', 12, QFont.Weight.Bold))
         teacher_layout.addWidget(teacher_label)
         
-        # 使用網���布局來放置按鈕
+        # 使用網布局來放置按鈕
         teacher_grid = QGridLayout()
         teacher_grid.setSpacing(10)  # 設定按鈕之間的間距
         teacher_grid.setHorizontalSpacing(10)  # 設定水平間距
@@ -417,6 +417,7 @@ class TeacherDocApp(QMainWindow):
         try:
             import os
             import json
+            import sys
             
             # 先嘗試從環境變數讀取
             credentials_json = os.getenv('GOOGLE_CREDENTIALS')
@@ -434,10 +435,18 @@ class TeacherDocApp(QMainWindow):
             
             # 如果環境變數不存在或失敗，則從檔案讀取
             try:
+                # 確定執行檔案的目錄
+                if getattr(sys, 'frozen', False):
+                    # 如果是打包後的執行檔
+                    application_path = os.path.dirname(sys.executable)
+                else:
+                    # 如果是直接執行 Python 腳本
+                    application_path = os.path.dirname(os.path.abspath(__file__))
+                
                 # 先嘗試讀取 embedded_credentials.json
-                cred_file = 'embedded_credentials.json'
+                cred_file = os.path.join(application_path, 'embedded_credentials.json')
                 if not os.path.exists(cred_file):
-                    cred_file = 'credentials.json'
+                    cred_file = os.path.join(application_path, 'credentials.json')
                 
                 print(f"嘗試從檔案讀取憑證：{cred_file}")
                 with open(cred_file, 'r', encoding='utf-8') as f:
@@ -1115,7 +1124,7 @@ class DocumentProcessor:
                 if marker in cell.text:
                     print(f"處理標記 {marker}...")
                     if isinstance(value, list) and key == 'other_certs':
-                        # 處理多張圖片
+                        # 處理多���圖片
                         print(f"開始處理其他證明照片，共 {len(value)} 張")
                         cell.text = cell.text.replace(marker, '')
                         paragraph = cell.paragraphs[0]
