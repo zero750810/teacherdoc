@@ -374,7 +374,7 @@ class TeacherDocApp(QMainWindow):
                 'https://www.googleapis.com/auth/drive.readonly'
             ]
             
-            # 取得憑證
+            # 取��憑證
             print("取得服務帳號憑證...")
             self.creds = self.get_service_account_creds()
             
@@ -419,20 +419,15 @@ class TeacherDocApp(QMainWindow):
             import json
             import sys
             
-            # 顯示目前的工作目錄
-            print(f"當前工作目錄: {os.getcwd()}")
-            
-            # 如果是打包後的執行檔，顯示執行檔位置
+            # 確定資源目錄
             if getattr(sys, 'frozen', False):
-                print(f"執行檔位置: {sys.executable}")
-                print(f"執行檔目錄: {os.path.dirname(sys.executable)}")
+                # 如果是打包後的執行檔
+                base_path = sys._MEIPASS  # PyInstaller 的特殊路徑
+            else:
+                # 如果是直接執行 Python 腳本
+                base_path = os.path.dirname(os.path.abspath(__file__))
             
-            # 列出當前目錄的所有檔案
-            print("當前目錄的檔案列表:")
-            for root, dirs, files in os.walk('.'):
-                print(f"\n目錄: {root}")
-                for file in files:
-                    print(f"  - {file}")
+            print(f"應用程式資源目錄: {base_path}")
             
             # 先嘗試從環境變數讀取
             credentials_json = os.getenv('GOOGLE_CREDENTIALS')
@@ -450,36 +445,13 @@ class TeacherDocApp(QMainWindow):
             
             # 如果環境變數不存在或失敗，則從檔案讀取
             try:
-                # 確定執行檔案的目錄
-                if getattr(sys, 'frozen', False):
-                    # 如果是打包後的執行檔
-                    application_path = os.path.dirname(sys.executable)
-                else:
-                    # 如果是直接執行 Python 腳本
-                    application_path = os.path.dirname(os.path.abspath(__file__))
+                # 只在資源目錄中尋找憑證檔案
+                cred_file = os.path.join(base_path, 'credentials.json')
                 
-                # 嘗試在不同位置尋找憑證檔案
-                possible_paths = [
-                    os.path.join(application_path, 'credentials.json'),
-                    os.path.join(os.getcwd(), 'credentials.json'),
-                    'credentials.json'
-                ]
+                print(f"嘗試讀取憑證檔案：{cred_file}")
+                if not os.path.exists(cred_file):
+                    raise FileNotFoundError(f"找不到憑證檔案：{cred_file}")
                 
-                print("\n嘗試尋找憑證檔案:")
-                for path in possible_paths:
-                    print(f"檢查路徑: {path}")
-                    print(f"檔案是否存在: {os.path.exists(path)}")
-                
-                cred_file = None
-                for path in possible_paths:
-                    if os.path.exists(path):
-                        cred_file = path
-                        break
-                
-                if not cred_file:
-                    raise FileNotFoundError("找不到憑證檔案")
-                
-                print(f"\n使用憑證檔案：{cred_file}")
                 with open(cred_file, 'r', encoding='utf-8') as f:
                     credentials_info = json.load(f)
                     creds = service_account.Credentials.from_service_account_info(
@@ -488,6 +460,7 @@ class TeacherDocApp(QMainWindow):
                     )
                     print("從檔案成功載入憑證")
                     return creds
+                
             except Exception as file_error:
                 print(f"從檔案載入憑證失敗：{str(file_error)}")
                 raise
@@ -839,7 +812,7 @@ class TeacherDocApp(QMainWindow):
                         'course_type': row[21] if len(row) > 21 else '' # 課程分類 (V欄)
                     }
                     
-                    # 修改照��欄位對應
+                    # 修改照欄位對應
                     photo_fields = {
                         3: ('photo', '大頭照'),       # D欄
                         17: ('id_front', '身分證正'),   # S欄
@@ -1013,7 +986,7 @@ class TeacherDocApp(QMainWindow):
         self.course_combo.clear()
         
         # 收集所有不重複的課程分類
-        course_types = {}  # 改用字典���儲存課分類和ID的對應關係
+        course_types = {}  # 改用字典儲存課分類和ID的對應關係
         for course_id, cdata in self.course_manager.courses.items():
             if 'course' in cdata and cdata['course']:
                 course_types[cdata['course']] = course_id
@@ -1380,7 +1353,7 @@ class DocumentProcessor:
                     break
             
             if not found:
-                print("找不到課��照片表格標記")
+                print("找不到課照片表格標記")
                 return
             
             # 取得照片列表
