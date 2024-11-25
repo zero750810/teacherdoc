@@ -18,6 +18,8 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton,
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 from googleapiclient.http import MediaIoBaseDownload
+import win32com.client
+from subprocess import run
 
 class LoginManager:
     def __init__(self, creds):
@@ -284,7 +286,7 @@ class TeacherDocApp(QMainWindow):
         teacher_grid.setVerticalSpacing(10)    # 設定垂直間距
         
         # 計算按鈕寬度 (視窗寬度 - 邊距 - 中間間距) / 2
-        button_width = (340 - 20 - 10) // 2
+        button_width = (320 - 20 - 10) // 2
         
         for i, (label, tag) in enumerate(self.teacher_tags):
             btn = QPushButton(label)
@@ -374,7 +376,7 @@ class TeacherDocApp(QMainWindow):
                 'https://www.googleapis.com/auth/drive.readonly'
             ]
             
-            # 取��憑證
+            # 取憑證
             print("取得服務帳號憑證...")
             self.creds = self.get_service_account_creds()
             
@@ -427,8 +429,6 @@ class TeacherDocApp(QMainWindow):
                 # 如果是直接執行 Python 腳本
                 base_path = os.path.dirname(os.path.abspath(__file__))
             
-            print(f"應用程式資源目錄: {base_path}")
-            
             # 先嘗試從環境變數讀取
             credentials_json = os.getenv('GOOGLE_CREDENTIALS')
             if credentials_json:
@@ -438,7 +438,6 @@ class TeacherDocApp(QMainWindow):
                         credentials_info,
                         scopes=self.SCOPES
                     )
-                    print("從環境變數成功載入憑證")
                     return creds
                 except Exception as env_error:
                     print(f"從環境變數載入憑證失敗：{str(env_error)}")
@@ -448,7 +447,6 @@ class TeacherDocApp(QMainWindow):
                 # 只在資源目錄中尋找憑證檔案
                 cred_file = os.path.join(base_path, 'credentials.json')
                 
-                print(f"嘗試讀取憑證檔案：{cred_file}")
                 if not os.path.exists(cred_file):
                     raise FileNotFoundError(f"找不到憑證檔案：{cred_file}")
                 
@@ -458,7 +456,6 @@ class TeacherDocApp(QMainWindow):
                         credentials_info,
                         scopes=self.SCOPES
                     )
-                    print("從檔案成功載入憑證")
                     return creds
                 
             except Exception as file_error:
@@ -467,8 +464,6 @@ class TeacherDocApp(QMainWindow):
         
         except Exception as e:
             print(f"讀取憑證時發生錯誤：{str(e)}")
-            print(f"錯誤類型：{type(e)}")
-            print(f"錯誤詳情：{e.__dict__}")
             raise
     
     def create_doc_tab(self):
@@ -938,27 +933,28 @@ class TeacherDocApp(QMainWindow):
                     # 處理課程照片
                     if len(row) > 7:
                         try:
-                            # 從課程名稱建立搜尋條件
-                            course_name = row[15].strip()  # 使用 A 欄的課程名稱
-                            # 修改搜尋條件，使用 contains 和 and 組合
-                            query = f"name contains '{course_name}_' and '{folder_id}' in parents and trashed = false"
-                            results = drive_service.files().list(
-                                q=query,
-                                fields="files(id, name)",
-                                orderBy="name"  # 加入排序，確保檔案順序
-                            ).execute()
-                            
-                            for file in results.get('files', []):
-                                try:
-                                    photo_name = file['name']
-                                    # 確認檔名格式是否符合 課程名稱_數字 的格式
-                                    name_parts = photo_name.rsplit('_', 1)
-                                    if len(name_parts) == 2 and name_parts[1].split('.')[0].isdigit():
-                                        save_path = f'images/courses/{photo_name}'
-                                        self._download_and_save_photo(drive_service, folder_id, photo_name, save_path)
-                                        course_data['photos'].append(save_path)
-                                except Exception as photo_error:
-                                    print(f"跳過照片 {photo_name}: {str(photo_error)}")
+                            # 從課程分類建立搜尋條件
+                            course_type = row[15].strip() if len(row) > 15 else ''  # 使用 P 欄的課程分類
+                            if course_type:  # 只有當課程分類存在時才處理
+                                # 修改搜尋條件，使用課程分類名稱
+                                query = f"name contains '{course_type}_' and '{folder_id}' in parents and trashed = false"
+                                results = drive_service.files().list(
+                                    q=query,
+                                    fields="files(id, name)",
+                                    orderBy="name"  # 加入排序，確保檔案順序
+                                ).execute()
+                                
+                                for file in results.get('files', []):
+                                    try:
+                                        photo_name = file['name']
+                                        # 確認檔名格式是否符合 課程分類_數字 的格式
+                                        name_parts = photo_name.rsplit('_', 1)
+                                        if len(name_parts) == 2 and name_parts[1].split('.')[0].isdigit():
+                                            save_path = f'images/courses/{photo_name}'
+                                            self._download_and_save_photo(drive_service, folder_id, photo_name, save_path)
+                                            course_data['photos'].append(save_path)
+                                    except Exception as photo_error:
+                                        print(f"跳過照片 {photo_name}: {str(photo_error)}")
                         except Exception as split_error:
                             print(f"處理照片列表時發生錯誤: {str(split_error)}")
                     
@@ -1032,7 +1028,7 @@ class TeacherDocApp(QMainWindow):
             print("Google Drive API 驗證成功")
             return True
         except Exception as e:
-            print(f"Google Drive API 驗證失敗：{str(e)}")
+            print(f"Google Drive API 驗證敗：{str(e)}")
             return False
 
 class TeacherDataManager:
@@ -1081,22 +1077,59 @@ class DocumentProcessor:
     def process_document(self, data, output_path):
         try:
             print("開始處理文件...")
+            file_ext = os.path.splitext(self.template_path)[1].lower()
+            
+            # 如果是 .doc 格式，先轉換為 .docx
+            if file_ext == '.doc':
+                print("轉換 DOC 到 DOCX 格式...")
+                word = win32com.client.Dispatch('Word.Application')
+                doc = word.Documents.Open(self.template_path)
+                docx_path = os.path.splitext(self.template_path)[0] + '.docx'
+                doc.SaveAs2(docx_path, FileFormat=16)  # 16 代表 .docx 格式
+                doc.Close()
+                word.Quit()
+                self.template_path = docx_path
+                file_ext = '.docx'
+            
+            # 如果是 .odt 格式，先轉換為 .docx
+            elif file_ext == '.odt':
+                print("轉換 ODT 到 DOCX 格式...")
+                from odf import text, teletype
+                from odf.opendocument import load
+                from subprocess import run
+                
+                # 使用 LibreOffice 進行轉換
+                docx_path = os.path.splitext(self.template_path)[0] + '.docx'
+                result = run([
+                    'soffice',
+                    '--headless',
+                    '--convert-to', 'docx',
+                    '--outdir', os.path.dirname(self.template_path),
+                    self.template_path
+                ])
+                
+                if result.returncode != 0:
+                    raise Exception("ODT 轉換失敗")
+                
+                self.template_path = docx_path
+                file_ext = '.docx'
+            
+            # 處理 .docx 格式
             doc = Document(self.template_path)
             
             # 修改這裡：在檔名中加入時間戳記，確保檔名唯一
             timestamp = datetime.now().strftime('%Y%m%d')
-            output_filename = f"{data.get('course_name', 'unknown')} - {data.get('name', 'unknown')}_{timestamp}.docx"
+            output_filename = f"{data.get('course_name', 'unknown')} - {data.get('name', 'unknown')}_{timestamp}{file_ext}"
             output_path = os.path.join(os.path.dirname(self.template_path), output_filename)
             
             # 處理表格中的標記
-            print("處理表格內容...")
             for table in doc.tables:
                 for row in table.rows:
                     for cell in row.cells:
                         if '@content' in cell.text:
                             self._replace_course_table(table, data)
                             break
-                        elif '@course_topic' in cell.text:  # 新增這個條件
+                        elif '@course_topic' in cell.text:
                             self._replace_course_topic_table(table, data)
                             break
                         elif '@price_list_table' in cell.text:
@@ -1109,14 +1142,40 @@ class DocumentProcessor:
                             self._process_cell(cell, data)
             
             # 處理段落中的標記
-            print("處理段標記內容...")
             for paragraph in doc.paragraphs:
                 self._process_paragraph(paragraph, data)
             
             print(f"儲存文件到 {output_path}...")
             doc.save(output_path)
+            
+            # 如果需要輸出為原始格式
+            if file_ext in ['.doc', '.odt']:
+                print(f"轉換回 {file_ext} 格式...")
+                if file_ext == '.doc':
+                    word = win32com.client.Dispatch('Word.Application')
+                    doc = word.Documents.Open(output_path)
+                    doc_path = os.path.splitext(output_path)[0] + '.doc'
+                    doc.SaveAs2(doc_path, FileFormat=0)  # 0 代表 .doc 格式
+                    doc.Close()
+                    word.Quit()
+                    os.remove(output_path)  # 移除中間的 .docx 檔案
+                    output_path = doc_path
+                elif file_ext == '.odt':
+                    odt_path = os.path.splitext(output_path)[0] + '.odt'
+                    result = run([
+                        'soffice',
+                        '--headless',
+                        '--convert-to', 'odt',
+                        '--outdir', os.path.dirname(output_path),
+                        output_path
+                    ])
+                    if result.returncode != 0:
+                        raise Exception("轉換回 ODT 失敗")
+                    os.remove(output_path)  # 移除中間的 .docx 檔案
+                    output_path = odt_path
+            
             return output_path
-        
+            
         except Exception as e:
             print(f"處理文件時發生錯誤：{str(e)}")
             raise
@@ -1233,7 +1292,7 @@ class DocumentProcessor:
     
     def _replace_course_table(self, table, data):
         try:
-            print("開始處理課程內容表格...")
+            print("開始處理課程��容表格...")
             
             # 找到標記所在的儲存格位
             start_row = 0

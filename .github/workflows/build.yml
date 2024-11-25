@@ -53,7 +53,7 @@ jobs:
     
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconfirm --onefile --windowed --debug all `
+        pyinstaller --noconfirm --onefile --windowed `
           --add-data "teacher_doc_generator.py;." `
           --add-data "courses.json;." `
           --add-data "teachers.json;." `
@@ -100,7 +100,7 @@ jobs:
     
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconfirm --onefile --windowed --debug all \
+        pyinstaller --noconfirm --onefile --windowed \
           --add-data "teacher_doc_generator.py:." \
           --add-data "courses.json:." \
           --add-data "teachers.json:." \
